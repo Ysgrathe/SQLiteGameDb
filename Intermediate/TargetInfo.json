@@ -1,0 +1,14 @@
+{
+	"Targets": [
+		{
+			"Name": "TutorialDemo",
+			"Path": "F:\\Work\\UNREAL_PROJECTS\\SqliteGameDB-TutorialDemo\\Source\\TutorialDemo.Target.cs",
+			"Type": "Game"
+		},
+		{
+			"Name": "TutorialDemoEditor",
+			"Path": "F:\\Work\\UNREAL_PROJECTS\\SqliteGameDB-TutorialDemo\\Source\\TutorialDemoEditor.Target.cs",
+			"Type": "Editor"
+		}
+	]
+}

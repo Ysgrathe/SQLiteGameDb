@@ -1,0 +1,34 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "SqliteGameDB",
+	"Description": "A utility plugin that simplifies using SQLite databases in your Unreal projects.",
+	"Category": "Database",
+	"CreatedBy": "Graham Chabas",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "SqliteGameDB",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "SQLiteCore",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		},
+		{
+			"Name": "SqliteGameDbEditor",
+			"Type": "Editor",
+			"LoadingPhase":  "PostEngineInit"
+		}
+	]
+}
