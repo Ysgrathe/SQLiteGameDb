@@ -26,8 +26,7 @@ public class SqliteGameDB : ModuleRules
 			new string[]
 			{
 				"Core",
-				"DeveloperSettings",
-				"SQLiteCore"
+				"DeveloperSettings"
 			}
 		);
 
@@ -38,7 +37,8 @@ public class SqliteGameDB : ModuleRules
 				"CoreUObject",
 				"Engine",
 				"Slate",
-				"SlateCore"
+				"SlateCore",
+				"SqliteCoreX"
 			}
 		);
 

@@ -21,9 +21,9 @@
 			"LoadingPhase": "Default"
 		},
 		{
-			"Name": "SQLiteCore",
+			"Name": "SqliteCoreX",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "PreDefault"
 		},
 		{
 			"Name": "SqliteGameDbEditor",

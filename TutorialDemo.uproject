@@ -10,7 +10,7 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"SqliteGameDB",
-				"SQLiteCore",
+				"SqliteCoreX",
 				"Engine"
 			]
 		}
