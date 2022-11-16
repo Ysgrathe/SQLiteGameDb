@@ -316,7 +316,8 @@ void UDbStatement::ReadIntoObject(UObject* ObjectToFill)
 
 			for (int32 ColNameIdx = 0; ColNameIdx < ColumnNames.Num(); ColNameIdx++)
 			{
-				if (FString ColName = ColumnNames[ColNameIdx]; PropName.Compare(*ColName, ESearchCase::IgnoreCase) == 0)
+				FString ColName = ColumnNames[ColNameIdx]; 
+				if (PropName.Compare(*ColName, ESearchCase::IgnoreCase) == 0)
 				{
 					/* We found a property flagged as SaveGame, with a matching column name
 					 * in the resultset row. Set the property's value to the column data. */

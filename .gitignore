@@ -41,3 +41,15 @@ $RECYCLE.BIN/
 Network Trash Folder
 Temporary Items
 .apdisk
+.idea/
+.vs/
+.suo
+
+# Ignore RiderLink plugin
+/Plugins/Developer
+
+# Ignore the unreal folders created during compilation/etc.
+Binaries/
+Intermediate/
+/Saved/
+.vs/TutorialDemo/v17/.suo

@@ -24,11 +24,6 @@
 			"Name": "SqliteCoreX",
 			"Type": "Runtime",
 			"LoadingPhase": "PreDefault"
-		},
-		{
-			"Name": "SqliteGameDbEditor",
-			"Type": "Editor",
-			"LoadingPhase":  "PostEngineInit"
 		}
 	]
 }
