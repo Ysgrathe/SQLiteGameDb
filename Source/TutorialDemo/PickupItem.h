@@ -80,7 +80,6 @@ private:
 
 	void SetMesh();
 
-private:
 	inline const static TArray<FString> AssetPaths = {
 		TEXT("/Game/Meshes/EnergyClip"),
 		TEXT("/Game/Meshes/Injector"),

@@ -7,9 +7,14 @@
 void UDbStatement::Initialize(FSQLiteDatabase* InDatabase, const FString SqlQueryText)
 {
 	check(InDatabase && InDatabase->IsValid());
-	SqliteDb = InDatabase;
+	SqliteDb          = InDatabase;
 	PreparedStatement = new FSQLitePreparedStatement();
-	bool CreateOk = PreparedStatement->Create(*SqliteDb, *SqlQueryText, ESQLitePreparedStatementFlags::Persistent);
+	bool CreateOk     = PreparedStatement->Create(*SqliteDb, *SqlQueryText, ESQLitePreparedStatementFlags::Persistent);
+	if (!CreateOk)
+	{
+		UE_LOG(LogSqliteGameDB, Error, TEXT("ERROR CREATING PREPARED STATEMENT: %s"), *SqlQueryText);
+		UE_LOG(LogSqliteGameDB, Error, TEXT("Reason: %s"), *SqliteDb->GetLastError());
+	}
 	check(CreateOk);
 }
 
@@ -111,7 +116,7 @@ bool UDbStatement::SetBindingValue(const FString InBindingName, TArrayView<const
 }
 
 bool UDbStatement::SetBindingValue(const FString InBindingName, const void* InBlobData, const int32 InBlobDataSizeBytes,
-                                   const bool bCopy)
+                                   const bool    bCopy)
 {
 	return PreparedStatement->SetBindingValueByName(*InBindingName, InBlobData, InBlobDataSizeBytes, bCopy);
 }
@@ -193,9 +198,9 @@ FQueryResult UDbStatement::ExecuteSelect()
 	check(PreparedStatement && PreparedStatement->IsValid());
 
 	TArray<ESQLiteColumnType> ColumnTypes;
-	TArray<FString> ColumnNames;
-	int32 NumberOfColumns = 0;
-	bool ColumnsParsed = false;
+	TArray<FString>           ColumnNames;
+	int32                     NumberOfColumns = 0;
+	bool                      ColumnsParsed   = false;
 
 	while (PreparedStatement->Step() == ESQLitePreparedStatementStepResult::Row)
 	{
@@ -205,7 +210,7 @@ FQueryResult UDbStatement::ExecuteSelect()
 		// If we haven't already done this, count the number of columns and their types
 		if (!ColumnsParsed)
 		{
-			ColumnNames = PreparedStatement->GetColumnNames();
+			ColumnNames     = PreparedStatement->GetColumnNames();
 			NumberOfColumns = ColumnNames.Num();
 			for (int32 i = 0; i < NumberOfColumns; i++)
 			{
@@ -299,7 +304,7 @@ void UDbStatement::ReadIntoObject(UObject* ObjectToFill)
 	/* NOTE: ObjectToFill->StaticClass() wont work here, as the pointer is UObject*,
 	we would get the UClass* for UObject and not the underlying class.
 	Instead we use GetClass() which returns the UClass for the 'actual' derived class */
-	UClass* ObjectClass = ObjectToFill->GetClass();
+	UClass*            ObjectClass   = ObjectToFill->GetClass();
 	TArray<FProperty*> SaveGameProps = FindSaveProperties(ObjectClass);
 
 	check(PreparedStatement && PreparedStatement->IsValid());
@@ -312,11 +317,11 @@ void UDbStatement::ReadIntoObject(UObject* ObjectToFill)
 		for (int32 PropIdx = 0; PropIdx < SaveGameProps.Num(); PropIdx++)
 		{
 			FProperty* Property = SaveGameProps[PropIdx];
-			FString PropName = Property->GetAuthoredName();
+			FString    PropName = Property->GetAuthoredName();
 
 			for (int32 ColNameIdx = 0; ColNameIdx < ColumnNames.Num(); ColNameIdx++)
 			{
-				FString ColName = ColumnNames[ColNameIdx]; 
+				FString ColName = ColumnNames[ColNameIdx];
 				if (PropName.Compare(*ColName, ESearchCase::IgnoreCase) == 0)
 				{
 					/* We found a property flagged as SaveGame, with a matching column name
@@ -368,7 +373,7 @@ void UDbStatement::ReadIntoObject(UObject* ObjectToFill)
 
 void UDbStatement::WriteFromObject(UObject* ObjectToSave)
 {
-	UClass* ObjectClass = ObjectToSave->GetClass();
+	UClass*            ObjectClass   = ObjectToSave->GetClass();
 	TArray<FProperty*> SaveGameProps = FindSaveProperties(ObjectClass);
 
 	check(PreparedStatement && PreparedStatement->IsValid());
@@ -386,15 +391,15 @@ void UDbStatement::WriteFromObject(UObject* ObjectToSave)
 		const int32 Idx = PreparedStatement->GetBindingIndexByName(*PropName);
 		if (Idx != 0)
 		{
-			const FFieldClass* ThisFieldClass = Prop->GetClass();
-			const EClassCastFlags ThisFieldType = static_cast<EClassCastFlags>(ThisFieldClass->GetId());
+			const FFieldClass*    ThisFieldClass = Prop->GetClass();
+			const EClassCastFlags ThisFieldType  = static_cast<EClassCastFlags>(ThisFieldClass->GetId());
 
 			switch (ThisFieldType)
 			{
 			case CASTCLASS_FBoolProperty:
 				{
 					const FBoolProperty* PropBool = CastField<FBoolProperty>(Prop);
-					bool* ValuePtr = PropBool->ContainerPtrToValuePtr<bool>(ObjectToSave);
+					bool*                ValuePtr = PropBool->ContainerPtrToValuePtr<bool>(ObjectToSave);
 					PreparedStatement->SetBindingValueByIndex(Idx, *ValuePtr);
 					break;
 				}
@@ -402,7 +407,7 @@ void UDbStatement::WriteFromObject(UObject* ObjectToSave)
 			case CASTCLASS_FByteProperty:
 				{
 					const FByteProperty* PropByte = CastField<FByteProperty>(Prop);
-					int8* ValuePtr = PropByte->ContainerPtrToValuePtr<int8>(ObjectToSave);
+					int8*                ValuePtr = PropByte->ContainerPtrToValuePtr<int8>(ObjectToSave);
 					PreparedStatement->SetBindingValueByIndex(Idx, *ValuePtr);
 					break;
 				}
@@ -410,7 +415,7 @@ void UDbStatement::WriteFromObject(UObject* ObjectToSave)
 			case CASTCLASS_FInt8Property:
 				{
 					const FInt8Property* PropInt8 = CastField<FInt8Property>(Prop);
-					int8* ValuePtr = PropInt8->ContainerPtrToValuePtr<int8>(ObjectToSave);
+					int8*                ValuePtr = PropInt8->ContainerPtrToValuePtr<int8>(ObjectToSave);
 					PreparedStatement->SetBindingValueByIndex(Idx, *ValuePtr);
 					break;
 				}
@@ -418,7 +423,7 @@ void UDbStatement::WriteFromObject(UObject* ObjectToSave)
 			case CASTCLASS_FInt16Property:
 				{
 					const FInt16Property* PropInt16 = CastField<FInt16Property>(Prop);
-					int16* ValuePtr = PropInt16->ContainerPtrToValuePtr<int16>(ObjectToSave);
+					int16*                ValuePtr  = PropInt16->ContainerPtrToValuePtr<int16>(ObjectToSave);
 					PreparedStatement->SetBindingValueByIndex(Idx, *ValuePtr);
 					break;
 				}
@@ -426,14 +431,14 @@ void UDbStatement::WriteFromObject(UObject* ObjectToSave)
 			case CASTCLASS_FUInt16Property:
 				{
 					const FUInt16Property* PropInt16_2 = CastField<FUInt16Property>(Prop);
-					int16* ValuePtr = PropInt16_2->ContainerPtrToValuePtr<int16>(ObjectToSave);
+					int16*                 ValuePtr    = PropInt16_2->ContainerPtrToValuePtr<int16>(ObjectToSave);
 					PreparedStatement->SetBindingValueByIndex(Idx, *ValuePtr);
 					break;
 				}
 			case CASTCLASS_FIntProperty:
 				{
 					const FIntProperty* PropInt32 = CastField<FIntProperty>(Prop);
-					int32* ValuePtr = PropInt32->ContainerPtrToValuePtr<int32>(ObjectToSave);
+					int32*              ValuePtr  = PropInt32->ContainerPtrToValuePtr<int32>(ObjectToSave);
 					PreparedStatement->SetBindingValueByIndex(Idx, *ValuePtr);
 					break;
 				}
@@ -441,7 +446,7 @@ void UDbStatement::WriteFromObject(UObject* ObjectToSave)
 			case CASTCLASS_FUInt32Property:
 				{
 					const FUInt32Property* PropInt32_2 = CastField<FUInt32Property>(Prop);
-					int32* ValuePtr = PropInt32_2->ContainerPtrToValuePtr<int32>(ObjectToSave);
+					int32*                 ValuePtr    = PropInt32_2->ContainerPtrToValuePtr<int32>(ObjectToSave);
 					PreparedStatement->SetBindingValueByIndex(Idx, *ValuePtr);
 					break;
 				}
@@ -449,14 +454,14 @@ void UDbStatement::WriteFromObject(UObject* ObjectToSave)
 			case CASTCLASS_FInt64Property:
 				{
 					const FInt64Property* PropInt64 = CastField<FInt64Property>(Prop);
-					int64* ValuePtr = PropInt64->ContainerPtrToValuePtr<int64>(ObjectToSave);
+					int64*                ValuePtr  = PropInt64->ContainerPtrToValuePtr<int64>(ObjectToSave);
 					PreparedStatement->SetBindingValueByIndex(Idx, *ValuePtr);
 					break;
 				}
 			case CASTCLASS_FUInt64Property:
 				{
 					const FUInt64Property* PropInt64_2 = CastField<FUInt64Property>(Prop);
-					int64* ValuePtr = PropInt64_2->ContainerPtrToValuePtr<int64>(ObjectToSave);
+					int64*                 ValuePtr    = PropInt64_2->ContainerPtrToValuePtr<int64>(ObjectToSave);
 					PreparedStatement->SetBindingValueByIndex(Idx, *ValuePtr);
 					break;
 				}
@@ -464,7 +469,7 @@ void UDbStatement::WriteFromObject(UObject* ObjectToSave)
 			case CASTCLASS_FFloatProperty:
 				{
 					const FFloatProperty* PropFloat = CastField<FFloatProperty>(Prop);
-					float* ValuePtr = PropFloat->ContainerPtrToValuePtr<float>(ObjectToSave);
+					float*                ValuePtr  = PropFloat->ContainerPtrToValuePtr<float>(ObjectToSave);
 					PreparedStatement->SetBindingValueByIndex(Idx, *ValuePtr);
 					break;
 				}
@@ -472,7 +477,7 @@ void UDbStatement::WriteFromObject(UObject* ObjectToSave)
 			case CASTCLASS_FDoubleProperty:
 				{
 					const FDoubleProperty* PropDouble = CastField<FDoubleProperty>(Prop);
-					double* ValuePtr = PropDouble->ContainerPtrToValuePtr<double>(ObjectToSave);
+					double*                ValuePtr   = PropDouble->ContainerPtrToValuePtr<double>(ObjectToSave);
 					PreparedStatement->SetBindingValueByIndex(Idx, *ValuePtr);
 					break;
 				}
@@ -480,15 +485,15 @@ void UDbStatement::WriteFromObject(UObject* ObjectToSave)
 			case CASTCLASS_FEnumProperty:
 				{
 					const FEnumProperty* PropEnum_2 = CastField<FEnumProperty>(Prop);
-					uint8* ValuePtr = PropEnum_2->ContainerPtrToValuePtr<uint8>(ObjectToSave);
+					uint8*               ValuePtr   = PropEnum_2->ContainerPtrToValuePtr<uint8>(ObjectToSave);
 					PreparedStatement->SetBindingValueByIndex(Idx, *ValuePtr);
 					break;
 				}
 
 			case CASTCLASS_FStrProperty:
 				{
-					const FStrProperty* PropStr = CastField<FStrProperty>(Prop);
-					FString* ValuePtr = PropStr->ContainerPtrToValuePtr<FString>(ObjectToSave);
+					const FStrProperty* PropStr  = CastField<FStrProperty>(Prop);
+					FString*            ValuePtr = PropStr->ContainerPtrToValuePtr<FString>(ObjectToSave);
 					PreparedStatement->SetBindingValueByIndex(Idx, *ValuePtr);
 					break;
 				}
@@ -496,7 +501,7 @@ void UDbStatement::WriteFromObject(UObject* ObjectToSave)
 			case CASTCLASS_FNameProperty:
 				{
 					const FNameProperty* Prop_Name = CastField<FNameProperty>(Prop);
-					FString* ValuePtr = Prop_Name->ContainerPtrToValuePtr<FString>(ObjectToSave);
+					FString*             ValuePtr  = Prop_Name->ContainerPtrToValuePtr<FString>(ObjectToSave);
 					PreparedStatement->SetBindingValueByIndex(Idx, *ValuePtr);
 					break;
 				}
@@ -504,7 +509,7 @@ void UDbStatement::WriteFromObject(UObject* ObjectToSave)
 			case CASTCLASS_FTextProperty:
 				{
 					const FTextProperty* PropText = CastField<FTextProperty>(Prop);
-					FString* ValuePtr = PropText->ContainerPtrToValuePtr<FString>(ObjectToSave);
+					FString*             ValuePtr = PropText->ContainerPtrToValuePtr<FString>(ObjectToSave);
 					PreparedStatement->SetBindingValueByIndex(Idx, *ValuePtr);
 					break;
 				}
@@ -548,7 +553,7 @@ void UDbStatement::ReadIntoObjectArray(TArray<UObject*>* ArrayToFill, UClass* Ob
 		for (int32 PropIdx = 0; PropIdx < SaveGameProps.Num(); PropIdx++)
 		{
 			FProperty* Property = SaveGameProps[PropIdx];
-			FString PropName = Property->GetAuthoredName();
+			FString    PropName = Property->GetAuthoredName();
 
 			for (int32 ColNameIdx = 0; ColNameIdx < ColumnNames.Num(); ColNameIdx++)
 			{
@@ -616,8 +621,8 @@ void UDbStatement::SetPropertyValue(UObject* ObjectToFill, FProperty* PropertyTo
 {
 	FString PropName = PropertyToSet->GetAuthoredName();
 
-	FFieldClass* ThisFieldClass = PropertyToSet->GetClass();
-	EClassCastFlags ThisFieldType = static_cast<EClassCastFlags>(ThisFieldClass->GetId());
+	FFieldClass*    ThisFieldClass = PropertyToSet->GetClass();
+	EClassCastFlags ThisFieldType  = static_cast<EClassCastFlags>(ThisFieldClass->GetId());
 
 	switch (ThisFieldType)
 	{

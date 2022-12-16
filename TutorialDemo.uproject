@@ -11,7 +11,8 @@
 			"AdditionalDependencies": [
 				"SqliteGameDB",
 				"SqliteCoreX",
-				"Engine"
+				"Engine",
+				"UMG"
 			]
 		}
 	],
