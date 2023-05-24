@@ -205,7 +205,8 @@ int64 FSQLiteDatabase::GetLastInsertRowId() const
 		: 0;
 }
 
-PRAGMA_DISABLE_OPTIMIZATION
+//PRAGMA_DISABLE_OPTIMIZATION
+UE_DISABLE_OPTIMIZATION_SHIP
 
 bool FSQLiteDatabase::PerformQuickIntegrityCheck() const
 {
@@ -222,4 +223,5 @@ bool FSQLiteDatabase::PerformQuickIntegrityCheck() const
 	return bSuccessful && OutIntegrityOk;
 }
 
-PRAGMA_ENABLE_OPTIMIZATION
+UE_ENABLE_OPTIMIZATION_SHIP
+//PRAGMA_ENABLE_OPTIMIZATION

@@ -18,7 +18,7 @@ class SQLITEGAMEDB_API UDbStatement : public UObject
 {
 public:
 	void Initialize(FSQLiteDatabase* InDatabase, const FString SqlQueryText);
-
+	
 	UFUNCTION(BlueprintCallable, Category = "SQLite Database|Prepared Statement",
 		meta = (DisplayName="Initilize Statement"))
 	void InitStatement(UDbBase* DbConnection, const FString SqlQueryText);
@@ -52,7 +52,7 @@ public:
 	 * @note If bCopy is set to false, then you must ensure the memory bound remains valid for the duration that the prepared statement is using it. */
 	bool SetBindingValue(const FString InBindingName, TArrayView<const uint8> InBlobData, const bool bCopy = true);
 	bool SetBindingValue(const FString InBindingName, const void* InBlobData, const int32 InBlobDataSizeBytes,
-	                     const bool bCopy = true);
+	                     const bool    bCopy = true);
 	bool SetBindingValue(const FString InBindingName, const FGuid& InValue);
 
 	/* Set the given null binding from its name or index. */
@@ -123,6 +123,12 @@ public:
 		return ResultObject;
 	}
 
+	template <class T>
+	void PersistObjectToData(T* ObjectToSave)
+	{
+		WriteFromObject(ObjectToSave);
+	}
+
 	/* Executes a resultset-returning prepared statement, and fills a TArray<T>,
 	 * with one new instance of T per result row.
 	 * For each new T, any property in the class flagged with the SaveGame specifier,
@@ -153,7 +159,7 @@ public:
 	}
 
 	template <class T>
-	void FillArrayWithSpawnedActors(TArray<T*>* Array)
+	void SpawnArrayOfActorsFromData(TArray<T*>* Array)
 	{
 		//return nullptr;
 	}
@@ -161,7 +167,6 @@ public:
 #pragma endregion
 
 protected:
-	
 private:
 	/* Reference to the database owning this prepared statement. */
 	FSQLiteDatabase* SqliteDb = nullptr;

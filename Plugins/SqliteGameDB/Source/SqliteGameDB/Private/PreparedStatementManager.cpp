@@ -232,6 +232,21 @@ void UPreparedStatementManager::RunTempActionQuery(const FString SqlToRun) const
 	Db->SqliteDb->Execute(*SqlToRun);
 }
 
+void UPreparedStatementManager::BeginTransaction()
+{
+	Db->SqliteDb->Execute(*Q_TranBegin);
+}
+
+void UPreparedStatementManager::CommitTransaction()
+{
+	Db->SqliteDb->Execute(*Q_TranCommit);
+}
+
+void UPreparedStatementManager::RollbackTransaction()
+{
+	Db->SqliteDb->Execute(*Q_TranRollback);
+}
+
 FQueryResult UPreparedStatementManager::RunTempSelectQuery(const FString SqlToRun) const
 {
 	UDbStatement* Temp = NewObject<UDbStatement>();

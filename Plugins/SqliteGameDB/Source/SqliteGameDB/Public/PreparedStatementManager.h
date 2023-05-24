@@ -126,6 +126,21 @@ public:
 		meta = (DisplayName="Execute Temporary Action Query"))
 	void RunTempActionQuery(const FString SqlToRun) const;
 
+	/* Initiates a SQLite transaction. */
+	UFUNCTION(BlueprintCallable, Category = "SQLite Database|Statement Manager",
+		meta = (DisplayName="Begin Transaction"))
+	void BeginTransaction();
+
+	/* Commits a pending SQLite transaction. */
+	UFUNCTION(BlueprintCallable, Category = "SQLite Database|Statement Manager",
+		meta = (DisplayName="Commit Transaction"))
+	void CommitTransaction();	
+
+	/* Rolls back a pending SQLite transaction */
+	UFUNCTION(BlueprintCallable, Category = "SQLite Database|Statement Manager",
+		meta = (DisplayName="Rollback Transaction"))
+	void RollbackTransaction();
+	
 private:
 	TWeakObjectPtr<UDbBase> Db = nullptr;
 
@@ -133,6 +148,11 @@ private:
 	TMap<FString, UPreparedStatementGroup*> QueryGroups;
 
 	const FString DefaultGroupName = TEXT("DEFAULT_QUERIES");
+
+	const FString Q_TranBegin = TEXT("BEGIN;");
+	const FString Q_TranCommit = TEXT("COMMIT;");
+	const FString Q_TranRollback = TEXT("ROLLBACK;");
+		
 	const FString Q_AttachDb = TEXT("ATTACH DATABASE @DbFileName AS @SchemaName;");
 	const FString Q_DetachDb = TEXT("DETACH DATABASE @SchemaName;");
 	const FString Q_GetSchemas = TEXT(

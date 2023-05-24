@@ -15,6 +15,7 @@ void UTutorialDataAccessLayer::Build(FString DatabaseFilePath, FGameDbConfig Con
 
 void UTutorialDataAccessLayer::TearDown()
 {
+	//FString::Printf(TEXT("Current: %d, Min: %d, Max: %d"), 1, 1, 1);
 }
 
 #pragma endregion
@@ -46,7 +47,7 @@ int32 UTutorialDataAccessLayer::GetLevelID(FString LevelName)
 }
 
 void UTutorialDataAccessLayer::SaveEquipmentItem(FString InstanceID, int32 EquipmentID, int32 LevelID,
-                                                 int32   Quantity)
+                                                 int32 Quantity)
 {
 	if (UDbStatement* PsSave = QueryManager->FindStatement(Q_UpsertEquipmentInstance))
 	{
@@ -98,7 +99,7 @@ int32 UTutorialDataAccessLayer::CreateUserAccount(FString UserName, FString Pass
 {
 	/* Strip off any whitespace characters from the beginning and end of the username. */
 	FString TrimmedUserName = UserName.TrimStartAndEnd();
-	FString TrimmedTagLine  = TagLine.TrimStartAndEnd();
+	FString TrimmedTagLine = TagLine.TrimStartAndEnd();
 
 	/* Treat any attempt to create an account with an empty username as an automatic failure.
 	   Because we trimmed the string, it also prevents names that are just whitespace. */

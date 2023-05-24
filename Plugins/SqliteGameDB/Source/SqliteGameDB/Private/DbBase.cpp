@@ -8,6 +8,8 @@
 #include "SqliteGameDBSettings.h"
 #include "Misc/Paths.h"
 #include "HAL/PlatformFileManager.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 UDbBase::UDbBase(const FObjectInitializer& ObjectInitializer)
 {
@@ -19,20 +21,24 @@ void UDbBase::Initialize(FString DatabaseFilePath, FGameDbConfig Config)
 {
 	IPlatformFile& FileManager = FPlatformFileManager::Get().GetPlatformFile();
 
-	/* Check that the given filename actually exists */
-	verifyf(FileManager.FileExists(*DatabaseFilePath), TEXT("The db file was not found."));
+	if (!FileManager.FileExists(*DatabaseFilePath))
+	{
+		UE_LOG(LogSqliteGameDB, Log, TEXT("The db file was not found: %s"), *DbFilePath);
+		FGenericPlatformMisc::RequestExit(false);
+		return;
+	}
 
 	DbFilePath = DatabaseFilePath;
 
 	// All the basic checks return OK, time to try to connect to the Db...
 	SqliteDb = new FSQLiteDatabase();
 
-	verifyf(SqliteDb->Open(*DbFilePath, ESQLiteDatabaseOpenMode::ReadWrite),
-	        TEXT("Attempt to open DB connection failed, reason: %s"),
-	        *(SqliteDb->GetLastError()));
+	verifyf(SqliteDb->Open(*DbFilePath, ESQLiteDatabaseOpenMode::ReadWrite), TEXT(
+		        "Attempt to open DB connection failed, reason: %s \n"
+		        "Unreal requires an exclusive lock to the DB file."));
 
 	UE_LOG(LogSqliteGameDB, Log, TEXT("Connection to DB opened successfully. %s"), *DbFilePath);
-	
+
 	QueryManager = NewObject<UPreparedStatementManager>();
 	QueryManager->Initialize(this);
 
@@ -44,13 +50,13 @@ void UDbBase::Initialize(FString DatabaseFilePath, FGameDbConfig Config)
 void UDbBase::BeginDestroy()
 {
 	TearDown();
-	
-	if(QueryManager)
+
+	if (QueryManager)
 	{
 		QueryManager->ConditionalBeginDestroy();
 		QueryManager = nullptr;
 	}
-	
+
 	if (SqliteDb && SqliteDb->IsValid())
 	{
 		// Attempt to close the open database

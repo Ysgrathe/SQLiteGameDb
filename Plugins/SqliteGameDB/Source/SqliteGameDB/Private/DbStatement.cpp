@@ -3,6 +3,7 @@
 #include "DbStatement.h"
 #include "UObject/TextProperty.h"
 #include "CustomLogging.h"
+#include "DbStringSerializer.h"
 
 void UDbStatement::Initialize(FSQLiteDatabase* InDatabase, const FString SqlQueryText)
 {
@@ -10,11 +11,6 @@ void UDbStatement::Initialize(FSQLiteDatabase* InDatabase, const FString SqlQuer
 	SqliteDb          = InDatabase;
 	PreparedStatement = new FSQLitePreparedStatement();
 	bool CreateOk     = PreparedStatement->Create(*SqliteDb, *SqlQueryText, ESQLitePreparedStatementFlags::Persistent);
-	if (!CreateOk)
-	{
-		UE_LOG(LogSqliteGameDB, Error, TEXT("ERROR CREATING PREPARED STATEMENT: %s"), *SqlQueryText);
-		UE_LOG(LogSqliteGameDB, Error, TEXT("Reason: %s"), *SqliteDb->GetLastError());
-	}
 	check(CreateOk);
 }
 
@@ -303,7 +299,7 @@ void UDbStatement::ReadIntoObject(UObject* ObjectToFill)
 {
 	/* NOTE: ObjectToFill->StaticClass() wont work here, as the pointer is UObject*,
 	we would get the UClass* for UObject and not the underlying class.
-	Instead we use GetClass() which returns the UClass for the 'actual' derived class */
+	Instead we use GetClass() which returns the UClass for the 'actual' derived class. */
 	UClass*            ObjectClass   = ObjectToFill->GetClass();
 	TArray<FProperty*> SaveGameProps = FindSaveProperties(ObjectClass);
 
@@ -321,8 +317,7 @@ void UDbStatement::ReadIntoObject(UObject* ObjectToFill)
 
 			for (int32 ColNameIdx = 0; ColNameIdx < ColumnNames.Num(); ColNameIdx++)
 			{
-				FString ColName = ColumnNames[ColNameIdx];
-				if (PropName.Compare(*ColName, ESearchCase::IgnoreCase) == 0)
+				if (FString ColName = ColumnNames[ColNameIdx]; PropName.Compare(*ColName, ESearchCase::IgnoreCase) == 0)
 				{
 					/* We found a property flagged as SaveGame, with a matching column name
 					 * in the resultset row. Set the property's value to the column data. */
@@ -396,6 +391,17 @@ void UDbStatement::WriteFromObject(UObject* ObjectToSave)
 
 			switch (ThisFieldType)
 			{
+			case CASTCLASS_UStruct:
+				{
+					const FStructProperty* PropStruct = CastField<FStructProperty>(Prop);
+					if (FDbStringSerializer* ActualProp = PropStruct->ContainerPtrToValuePtr<FDbStringSerializer>(
+						ObjectToSave))
+					{
+						PreparedStatement->SetBindingValueByIndex(Idx, ActualProp->ToDbString());
+						break;
+					}
+				}
+
 			case CASTCLASS_FBoolProperty:
 				{
 					const FBoolProperty* PropBool = CastField<FBoolProperty>(Prop);
@@ -549,7 +555,8 @@ void UDbStatement::ReadIntoObjectArray(TArray<UObject*>* ArrayToFill, UClass* Ob
 		// GetColumnNames() caches them on the first call, so no problem calling it repeatedly.
 		TArray<FString> ColumnNames = PreparedStatement->GetColumnNames();
 
-		// Fill the NewItem's properties with the database data.
+		// Iterate over all the 'SaveGame' marked properties, 
+		// Fill the NewItem's properties with the corresponding database data.
 		for (int32 PropIdx = 0; PropIdx < SaveGameProps.Num(); PropIdx++)
 		{
 			FProperty* Property = SaveGameProps[PropIdx];
@@ -615,6 +622,8 @@ void UDbStatement::ReadIntoObjectArray(TArray<UObject*>* ArrayToFill, UClass* Ob
 		// Add the NewItem to the array.
 		ArrayToFill->Add(NewItem);
 	}
+
+	PreparedStatement->Reset();
 }
 
 void UDbStatement::SetPropertyValue(UObject* ObjectToFill, FProperty* PropertyToSet, FQueryResultField Value) const
@@ -626,6 +635,33 @@ void UDbStatement::SetPropertyValue(UObject* ObjectToFill, FProperty* PropertyTo
 
 	switch (ThisFieldType)
 	{
+	case CASTCLASS_FStructProperty:
+		{
+			/* In this case, the property is a USTRUCT, and therefore should contain other properties itself.
+			   This can be handled automatically if the struct inherits from FDbStringSerializer,
+			   and overrides the FromDbString method.
+			   This method allows a query to return compound data in a string,
+			   which the method parses to initialize the struct's values.
+			   For example, you might use a '|' delimited string,
+			   and parse out values into whatever sub properties are required.
+
+			   NOTE of CAUTION: This is intended as a 'development convenience';
+			   both serializing and deserializing data with packed strings obviously comes at the cost
+			   of increased processing overhead.
+			   Use it sparingly for small structs used as properties, which keep the code more organised,
+			   and where the struct may be used in multiple places.
+			*/
+			FStructProperty* PropStruct = CastField<FStructProperty>(PropertyToSet);
+			if (FDbStringSerializer* ActualProp = PropStruct->ContainerPtrToValuePtr<FDbStringSerializer>(ObjectToFill))
+			{
+				ActualProp->FromDbString(Value.StrVal);
+				break;
+			}
+			LOG_GDB(Error, TEXT("Attempt to call SetPropertyValue() with CASTCLASS_FStructProperty, "
+				        "but target UStruct does not inherit from FDbStringSerializer."));
+			checkNoEntry();
+			break;
+		}
 	case CASTCLASS_FBoolProperty:
 		{
 			FBoolProperty* PropBool = CastField<FBoolProperty>(PropertyToSet);

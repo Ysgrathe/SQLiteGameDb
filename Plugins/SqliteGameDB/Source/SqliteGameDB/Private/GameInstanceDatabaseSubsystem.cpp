@@ -103,14 +103,17 @@ UDbBase* UGameInstanceDatabaseSubsystem::GetDatabaseByFilename(FString DbFilenam
 {
 	for (UDbBase* Db : DatabaseConnections)
 	{
-		FString DbPath = Db->GetDbName();
-		FString LeftStr;
-		FString DbName;
-		DbPath.Split("/", &LeftStr, &DbName, ESearchCase::CaseSensitive, ESearchDir::FromEnd);
-
-		if (!DbName.IsEmpty() && DbName.Compare(DbFilename, ESearchCase::IgnoreCase) == 0)
+		if (Db)
 		{
-			return Db;
+			FString DbPath = Db->GetDbName();
+			FString LeftStr;
+			FString DbName;
+			DbPath.Split("/", &LeftStr, &DbName, ESearchCase::CaseSensitive, ESearchDir::FromEnd);
+
+			if (!DbName.IsEmpty() && DbName.Compare(DbFilename, ESearchCase::IgnoreCase) == 0)
+			{
+				return Db;
+			}
 		}
 	}
 	return nullptr;
@@ -128,7 +131,7 @@ UDbBase* UDbManagerStatics::GetDatabaseByFilename(FString DbFilename)
 	UDbBase* Result = DBSubSystem->GetDatabaseByFilename(DbFilename);
 
 	/* Not finding a database we expect to find is a critical error. */
-	verifyf(Result, TEXT("GetDatabaseByFilename failed to find the specified db"));
+	checkf(Result, TEXT("GetDatabaseByFilename failed to find the specified db"));
 	return Result;
 }
 
