@@ -91,7 +91,7 @@ struct FQueryResultRow
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category="Query Result|Fields")
 	TArray<FQueryResultField> Fields;
 };
 
@@ -101,6 +101,6 @@ struct FQueryResult
 {
 	GENERATED_BODY()
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(BlueprintReadOnly, Category="Query Result|Rows")
 	TArray<FQueryResultRow> Rows;
 };

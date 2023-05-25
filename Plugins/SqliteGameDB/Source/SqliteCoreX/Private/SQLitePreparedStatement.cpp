@@ -725,16 +725,6 @@ const TArray<FString>& FSQLitePreparedStatement::GetColumnNames() const
 	return CachedColumnNames;
 }
 
-const FString FSQLitePreparedStatement::GetSQL() const
-{
-	if (!Statement)
-	{
-		return FString();
-	}
-	
-	return sqlite3_sql(Statement);
-}
-
 void FSQLitePreparedStatement::CacheColumnNames() const
 {
 	if (!Statement || CachedColumnNames.Num() > 0)

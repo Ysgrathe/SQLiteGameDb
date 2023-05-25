@@ -292,11 +292,6 @@ public:
 	 */
 	const TArray<FString>& GetColumnNames() const;
 
-	/**
-	 * Get the SQL text used to create this statement.
-	 */
-	const FString GetSQL() const;
-
 private:
 	/** Attempt to cache the column names, if required and possible */
 	void CacheColumnNames() const;
