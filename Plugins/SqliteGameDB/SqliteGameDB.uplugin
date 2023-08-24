@@ -18,12 +18,12 @@
 		{
 			"Name": "SqliteGameDB",
 			"Type": "Runtime",
-			"LoadingPhase": "PreDefault"
+			"LoadingPhase": "PostDefault"
 		},
 		{
 			"Name": "SqliteCoreX",
 			"Type": "Runtime",
-			"LoadingPhase": "PreDefault"
+			"LoadingPhase": "PostDefault"
 		}
 	]
 }
