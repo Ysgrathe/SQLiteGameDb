@@ -203,17 +203,11 @@ FQueryResult UDbStatement::ExecuteSelect()
 		// create a new row
 		FQueryResultRow newRow;
 
-		// If we haven't already done this, count the number of columns and their types
 		if (!ColumnsParsed)
 		{
 			ColumnNames     = PreparedStatement->GetColumnNames();
 			NumberOfColumns = ColumnNames.Num();
-			for (int32 i = 0; i < NumberOfColumns; i++)
-			{
-				ESQLiteColumnType ThisColType;
-				PreparedStatement->GetColumnTypeByIndex(i, ThisColType);
-				ColumnTypes.Add(ThisColType);
-			}
+			ColumnsParsed   = true;
 		}
 
 		for (int columnIdx = 0; columnIdx < NumberOfColumns; columnIdx++)
@@ -222,7 +216,8 @@ FQueryResult UDbStatement::ExecuteSelect()
 			FQueryResultField newField;
 
 			/* get the sqlite datatype for this column. */
-			ESQLiteColumnType ColType = ColumnTypes[columnIdx];
+			ESQLiteColumnType ColType;
+			PreparedStatement->GetColumnTypeByIndex(columnIdx, ColType);
 
 			switch (ColType)
 			{
