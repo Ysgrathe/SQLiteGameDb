@@ -15,7 +15,7 @@ an updated version of the default SQLite plugin code provided by Epic.
 https://youtu.be/yYn7L6e99D8  
 > 
 >Join the **Discord** for general game dev chat, help with unreal, and specific SqliteGameDB questions:  
-https://discord.com/channels/880412919047790603/1019180887969103903
+https://discord.gg/jjy2aJ3hj9
 
 ## Unreal version
 The plugin has been compiled and tested with UE5.0 and UE5.1  
