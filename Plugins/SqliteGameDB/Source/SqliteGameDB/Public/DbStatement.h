@@ -119,7 +119,8 @@ public:
 	T* CreateObjectFromData()
 	{
 		T* ResultObject = NewObject<T>();
-		ReadIntoObject(ResultObject);
+		if (!ReadIntoObject(ResultObject))
+			return nullptr;
 		return ResultObject;
 	}
 
@@ -179,8 +180,11 @@ private:
 	static TArray<FProperty*> FindSaveProperties(UStruct* ThisClass);
 
 	/* Executes the prepared statement and tries to fill the provided object
-	 * with the returned data. */
-	void ReadIntoObject(UObject* ObjectToFill);
+	 * with the returned data.
+	 *
+  	 * Returns `true` if data was returned from the database, else `false`.
+	 */
+	bool ReadIntoObject(UObject* ObjectToFill);
 
 	/*void ReadIntoStruct(UScriptStruct* StructType, void* Thing);*/
 
