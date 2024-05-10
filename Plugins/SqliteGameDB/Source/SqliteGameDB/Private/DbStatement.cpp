@@ -1,4 +1,4 @@
-﻿/* © Copyright 2022 Graham Chabas, All Rights Reserved. */
+/* © Copyright 2022 Graham Chabas, All Rights Reserved. */
 
 #include "DbStatement.h"
 #include "UObject/TextProperty.h"
@@ -290,13 +290,14 @@ TArray<FProperty*> UDbStatement::FindSaveProperties(UStruct* ThisClass)
 	return SaveProperties;
 }
 
-void UDbStatement::ReadIntoObject(UObject* ObjectToFill)
+bool UDbStatement::ReadIntoObject(UObject* ObjectToFill)
 {
 	/* NOTE: ObjectToFill->StaticClass() wont work here, as the pointer is UObject*,
 	we would get the UClass* for UObject and not the underlying class.
 	Instead we use GetClass() which returns the UClass for the 'actual' derived class. */
 	UClass*            ObjectClass   = ObjectToFill->GetClass();
 	TArray<FProperty*> SaveGameProps = FindSaveProperties(ObjectClass);
+	bool rc = true;
 
 	check(PreparedStatement && PreparedStatement->IsValid());
 
@@ -355,10 +356,14 @@ void UDbStatement::ReadIntoObject(UObject* ObjectToFill)
 				}
 			}
 		}
+	} else 
+	{
+		rc = false;
 	}
 
 	/* Reset the statement when we are done with it. */
 	PreparedStatement->Reset();
+	return rc;
 }
 
 void UDbStatement::WriteFromObject(UObject* ObjectToSave)
