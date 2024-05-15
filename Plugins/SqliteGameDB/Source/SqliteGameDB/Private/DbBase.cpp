@@ -33,9 +33,9 @@ void UDbBase::Initialize(FString DatabaseFilePath, FGameDbConfig Config)
 	// All the basic checks return OK, time to try to connect to the Db...
 	SqliteDb = new FSQLiteDatabase();
 
-	verifyf(SqliteDb->Open(*DbFilePath, ESQLiteDatabaseOpenMode::ReadWrite), TEXT(
-		        "Attempt to open DB connection failed, reason: %s \n"
-		        "Unreal requires an exclusive lock to the DB file."));
+	verifyf(SqliteDb->Open(*DbFilePath, ESQLiteDatabaseOpenMode::ReadWrite),
+		TEXT("Attempt to open DB connection failed, reason: %s \n"),
+		TEXT("Unreal requires an exclusive lock to the DB file."));
 
 	UE_LOG(LogSqliteGameDB, Log, TEXT("Connection to DB opened successfully. %s"), *DbFilePath);
 
