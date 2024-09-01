@@ -10,5 +10,6 @@ public class TutorialDemoTarget : TargetRules
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 		ExtraModuleNames.Add("TutorialDemo");
+		bOverrideBuildEnvironment = true;
 	}
 }
