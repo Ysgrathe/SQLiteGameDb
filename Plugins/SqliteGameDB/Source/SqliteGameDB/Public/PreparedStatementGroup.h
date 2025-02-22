@@ -61,7 +61,7 @@ private:
 
 	GENERATED_BODY()
 
-	const FString Q_HasQueries = TEXT("select count(*) as HasQueries from sqlite_master where name like 'Queries'");
+	const FString Q_HasQueries = TEXT("select count(*) as HasQueries from sqlite_master where name = 'Queries'");
 	const FString Q_ListQueries = TEXT("select * from queries {0} order by Key");
-	const FString Q_FilterQueries = TEXT(" where SchemaName = '{0}';");
+	const FString Q_FilterQueries = TEXT(" where SchemaName = '{0}'");
 };
